@@ -8,8 +8,8 @@ from kompas_document import *
 class KompasAPI:
 
     def __init__(self):
-        self.process = self.get_proc()
-        self.is_run = True if self.process else False
+        self.__process = self.get_proc()
+        self.verify_kompas(self.__process)
 
     def connect_to_kompas(self):
         #  Подключим константы API Компас
@@ -26,30 +26,39 @@ class KompasAPI:
         self.application = self.KAPI7.IApplication(
             Dispatch("Kompas.Application.7")._oleobj_.QueryInterface(self.KAPI7.IApplication.CLSID,
                                                                      pythoncom.IID_IDispatch))
-        self.process = self.get_proc()
+        self.__process = self.get_proc()
 
-    @staticmethod
-    def get_proc():
+    @classmethod
+    def get_proc(cls):
         for proc in psutil.process_iter():
             name = proc.name()
             if name == "KOMPAS.Exe":
                 return proc
 
+    @classmethod
+    def verify_document(cls, doc):
+        if not doc:
+            raise Exception("Документ Компас не найден. Откройте документ!")
+
+    @classmethod
+    def verify_kompas(cls, process):
+        if not process:  # Компас не запущен
+            raise Exception("Вам необходимо запустить Компас!")
+
     def close(self):
-        if not self.is_run:
-            self.process.kill()
+        self.__process.kill()
 
     def get_active_doc(self):
         """Получаем активный компас-документ"""
-        if self.is_run:
-            iDocument = self.application.ActiveDocument
-            return iDocument
+        document = self.application.ActiveDocument
+        self.verify_document(document)
+        return KompasDocument(document)
 
 
 if __name__ == '__main__':
     kompas = KompasAPI()
     kompas.connect_to_kompas()
     doc = kompas.get_active_doc()
-    doc = KompasDocument(doc)
-
-    kompas.close()
+    print(doc.sheets_count)
+    print(doc.iDocument)
+    # kompas.close()
