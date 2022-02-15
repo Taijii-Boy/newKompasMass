@@ -7,7 +7,8 @@ class KompasDocument:
         self.full_name = doc.PathName
         self.type = self.get_document_type(doc.DocumentType)
         self.__iDocument = doc
-        self.__iLayoutSheets = self.iDocument.LayoutSheets
+        self.iLayoutSheets = self.__iDocument.LayoutSheets
+        self.library_path = r"e:\Program Files(x86)\ASCON\KOMPAS-3D V14\LYT\GRAPHICIL.LYT"
 
     @classmethod
     def get_document_type(cls, doc_type: int) -> str:
@@ -22,20 +23,16 @@ class KompasDocument:
 
     @property
     def sheets_count(self):
-        return self.__iLayoutSheets.Count
+        return self.iLayoutSheets.Count
 
     @property
     def iDocument(self):
         return self.__iDocument
 
-    def get_views(self):
-        pass
+    @staticmethod
+    def comma_to_point(text):
+        return text.replace(',', '.')
 
-
-class CDW(KompasDocument):
-    def __init__(self, doc):
-        super().__init__(doc)
-
-
-class SPW(KompasDocument):
-    pass
+    @staticmethod
+    def point_to_comma(text):
+        return text.replace('.', ',')

@@ -3,6 +3,8 @@ import psutil
 from win32com.client import Dispatch, gencache
 
 from kompas_document import *
+from cdw import *
+from spw import *
 
 
 class KompasAPI:
@@ -28,6 +30,7 @@ class KompasAPI:
                                                                      pythoncom.IID_IDispatch))
         self.__process = self.get_proc()
 
+
     @classmethod
     def get_proc(cls):
         for proc in psutil.process_iter():
@@ -52,13 +55,22 @@ class KompasAPI:
         """Получаем активный компас-документ"""
         document = self.application.ActiveDocument
         self.verify_document(document)
-        return KompasDocument(document)
+        return document
+
+    def make_kompas_document(self, doc):
+        if doc.Name.endswith('cdw'):
+            return CDW(doc)
+        elif doc.Name.endswith('spw'):
+            return SPW(doc, self.iKompasObject)
+        else:
+            raise TypeError('Неверный формат. Требуется cdw или spw.')
 
 
 if __name__ == '__main__':
     kompas = KompasAPI()
     kompas.connect_to_kompas()
-    doc = kompas.get_active_doc()
-    print(doc.sheets_count)
-    print(doc.iDocument)
+    api_document = kompas.get_active_doc()
+    document = kompas.make_kompas_document(api_document)
+    print(document.extension)
+
     # kompas.close()
