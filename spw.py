@@ -1,6 +1,5 @@
 from kompas_document import *
 
-
 class SPW(KompasDocument):
     def __init__(self, doc, iKompasObject):
         super().__init__(doc)
@@ -61,7 +60,7 @@ class SPW(KompasDocument):
             else:
                 self.__mass = self.__mass - float(sp_mass)
 
-    def get_result(self):
+    def get_result(self) -> str:
         self.__mass = round(self.__mass, 3)
         return self.point_to_comma(str(self.__mass))
 
@@ -72,4 +71,3 @@ class SPW(KompasDocument):
         for sp_naim, sp_mass, sp_col in objects:
             self.calculate_object_mass(sp_naim, sp_mass, sp_col)
         return self.get_result()
-
