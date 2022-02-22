@@ -371,11 +371,20 @@ border-radius: 5px;
             <height>28</height>
            </size>
           </property>
+          <property name="font">
+           <font>
+            <family>Roboto</family>
+            <pointsize>14</pointsize>
+           </font>
+          </property>
           <property name="styleSheet">
            <string notr="true"/>
           </property>
           <property name="frame">
            <bool>true</bool>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
           </property>
           <property name="readOnly">
            <bool>true</bool>
@@ -430,6 +439,15 @@ border-radius: 5px;
             <height>28</height>
            </size>
           </property>
+          <property name="font">
+           <font>
+            <family>Roboto</family>
+            <pointsize>14</pointsize>
+           </font>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
           <property name="readOnly">
            <bool>true</bool>
           </property>
@@ -482,6 +500,15 @@ border-radius: 5px;
             <width>16777215</width>
             <height>28</height>
            </size>
+          </property>
+          <property name="font">
+           <font>
+            <family>Roboto</family>
+            <pointsize>14</pointsize>
+           </font>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
           </property>
           <property name="readOnly">
            <bool>true</bool>

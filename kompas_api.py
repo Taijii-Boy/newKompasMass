@@ -41,12 +41,14 @@ class KompasAPI:
     @classmethod
     def verify_document(cls, doc):
         if not doc:
-            raise Exception("Документ Компас не найден. Откройте документ!")
+            # raise Exception("Документ Компас не найден. Откройте документ!")
+            print("Документ Компас не найден. Откройте документ!")
 
     @classmethod
     def verify_kompas(cls, process):
         if not process:  # Компас не запущен
-            raise Exception("Вам необходимо запустить Компас!")
+            # raise Exception("Вам необходимо запустить Компас!")
+            print("Вам необходимо запустить Компас!")
 
     def close(self):
         self.__process.kill()
@@ -56,6 +58,9 @@ class KompasAPI:
         document = self.application.ActiveDocument
         self.verify_document(document)
         return document
+
+    def get_kompas_status(self) -> str:
+        return "Закрыт" if not self.__process else "Открыт"
 
     def make_kompas_document(self, doc):
         if doc.Name.endswith('cdw'):

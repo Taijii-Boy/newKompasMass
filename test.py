@@ -8,27 +8,6 @@ import time
 import sys
 
 
-class StatusThread(QtCore.QThread):
-    """Класс потока для расчетов"""
-
-    mysignal = QtCore.pyqtSignal(str)
-
-    def __init__(self, parent=None):
-        QtCore.QThread.__init__(self, parent)
-        self.status = kompas.get_kompas_status()
-
-
-    def run(self):
-        while self.status == 'Закрыт':
-            time.sleep(1)
-            self.status = kompas.get_kompas_status()
-            kompas.connect_to_kompas()
-
-            # Передача данных из потока через сигнал
-        self.mysignal.emit('Открыт')
-
-
-
 class MyWin(QMainWindow):
     """Главное окно приложения"""
 
@@ -39,6 +18,10 @@ class MyWin(QMainWindow):
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.ui.widget.setGraphicsEffect(QGraphicsDropShadowEffect(blurRadius=25, xOffset=0, yOffset=0))
+        self.timer = QTimer()
+        self.timer.timeout.connect(self.add_status_text)
+        self.timer.start(10000)
+        self.index = 1
 
         # Обработчики
         self.ui.pushButton_3.clicked.connect(lambda: self.close())
@@ -59,24 +42,18 @@ class MyWin(QMainWindow):
         """Get the current position of the mouse"""
         self.click_position = event.globalPos()
 
-    def add_status_text(self, status: str):
-        self.ui.lineEdit.setText(status)
+    def add_status_text(self):
+        self.ui.lineEdit.setText(self.index)
+        self.index += 1
+
+
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     my_app = MyWin()
     my_app.show()
-    kompas = KompasAPI()
-    status = kompas.get_kompas_status()
-    my_app.ui.lineEdit.setText(status)
-    status_thread = StatusThread()
-    status_thread.mysignal.connect(my_app.add_status_text, QtCore.Qt.QueuedConnection)
-    status_thread.start()
 
-    # api_document = kompas.get_active_doc()
-    # document = kompas.make_kompas_document(api_document)
-    # my_app.ui.lineEdit_2.setText(document.name)
-    # my_app.ui.lineEdit_3.setText(document.get_mass())
 
 
     sys.exit(app.exec_())
