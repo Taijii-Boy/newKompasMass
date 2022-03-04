@@ -31,8 +31,7 @@ class KompasAPI:
         self.__process = self.get_proc()
 
 
-    @classmethod
-    def get_proc(cls):
+    def get_proc(self):
         for proc in psutil.process_iter():
             name = proc.name()
             if name == "KOMPAS.Exe":
