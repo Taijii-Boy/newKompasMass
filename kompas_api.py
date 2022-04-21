@@ -1,5 +1,7 @@
 import pythoncom
 import psutil
+import threading
+import time
 from win32com.client import Dispatch, gencache
 
 from kompas_document import *
@@ -10,8 +12,10 @@ from spw import *
 class KompasAPI:
 
     def __init__(self):
-        self.__process = self.get_proc()
-        self.verify_kompas(self.__process)
+        self.__process = None
+        self.__active_document = None
+        self.check_kompas_timer()
+
 
     def connect_to_kompas(self):
         #  Подключим константы API Компас
@@ -28,26 +32,27 @@ class KompasAPI:
         self.application = self.KAPI7.IApplication(
             Dispatch("Kompas.Application.7")._oleobj_.QueryInterface(self.KAPI7.IApplication.CLSID,
                                                                      pythoncom.IID_IDispatch))
-        self.__process = self.get_proc()
-
 
     def get_proc(self):
+        """Ищет среди приложений Компас и возвращает процесс"""
         for proc in psutil.process_iter():
             name = proc.name()
             if name == "KOMPAS.Exe":
                 return proc
 
-    @classmethod
-    def verify_document(cls, doc):
-        if not doc:
-            # raise Exception("Документ Компас не найден. Откройте документ!")
-            print("Документ Компас не найден. Откройте документ!")
+    def check_process(self):
+        """Проверяет, запущен ли Компас"""
+        while True:
+            if self.__process and psutil.pid_exists(self.__process.pid):
+                time.sleep(5)
+                continue
+            else:
+                self.__process = self.get_proc()
+                time.sleep(3)
 
-    @classmethod
-    def verify_kompas(cls, process):
-        if not process:  # Компас не запущен
-            # raise Exception("Вам необходимо запустить Компас!")
-            print("Вам необходимо запустить Компас!")
+    def check_kompas_timer(self):
+        timer = threading.Thread(target=self.check_process, name='Timer', daemon=True)
+        timer.start()
 
     def close(self):
         self.__process.kill()
@@ -55,7 +60,8 @@ class KompasAPI:
     def get_active_doc(self):
         """Получаем активный компас-документ"""
         document = self.application.ActiveDocument
-        self.verify_document(document)
+        if document:
+            self.__active_document = document
         return document
 
     def get_kompas_status(self) -> str:
@@ -72,9 +78,10 @@ class KompasAPI:
 
 if __name__ == '__main__':
     kompas = KompasAPI()
-    kompas.connect_to_kompas()
-    api_document = kompas.get_active_doc()
-    document = kompas.make_kompas_document(api_document)
-    print(document.extension)
+
+    # kompas.connect_to_kompas()
+    # api_document = kompas.get_active_doc()
+    # document = kompas.make_kompas_document(api_document)
+    # # print(document.extension)
 
     # kompas.close()

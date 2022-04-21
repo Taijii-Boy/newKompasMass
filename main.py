@@ -35,7 +35,15 @@ class MyWin(QMainWindow):
         QWidget.__init__(self, parent)
         self.ui = Ui_Form()
         self.ui.setupUi(self)
-        self.timer_id = self.startTimer(3000, timerType=QtCore.Qt.VeryCoarseTimer)
+
+        self.check_kompas_timer = QTimer(self)
+        self.check_kompas_timer.timeout.connect(self.check_kompas)
+        self.check_kompas_timer.start(3000)
+
+        self.active_document = None
+        self.kompas_status = None
+
+        # Графические эффекты
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.ui.widget.setGraphicsEffect(QGraphicsDropShadowEffect(blurRadius=25, xOffset=0, yOffset=0))
@@ -44,7 +52,7 @@ class MyWin(QMainWindow):
         self.ui.pushButton_3.clicked.connect(lambda: self.close())
         self.ui.pushButton_4.clicked.connect(lambda: self.showMinimized())
 
-        # Events
+        # События
         self.ui.label_2.mouseMoveEvent = self.move_window
         self.ui.label_3.mouseMoveEvent = self.move_window
 
@@ -55,35 +63,27 @@ class MyWin(QMainWindow):
             self.click_position = e.globalPos()
             e.accept()
 
+
     def mousePressEvent(self, event: QMouseEvent):
         """Получаем текущие координаты курсора мыши"""
         self.click_position = event.globalPos()
 
-    # def add_status_text(self, status: str):
-    #     self.ui.lineEdit.setText(status)
 
-    # @staticmethod
-    # def decorator_cache(some_func):
-    #     mem = {}
-    #     def wrapper(*args):
-    #         if args in mem:
-    #             print('returning from cache')
-    #             return mem[args]
-    #         else:
-    #             result = some_func(*args)
-    #             mem[args] = result
-    #             return result
-    #     return wrapper
+    def check_kompas(self):
+        self.kompas_status = kompas.get_kompas_status()
+        my_app.ui.lineEdit.setText(self.kompas_status)
+        if self.kompas_status == 'Открыт':
+            kompas.connect_to_kompas()
+            document = kompas.get_active_doc()
+            print(document)
+            if document != self.active_document:
+                document = kompas.make_kompas_document(document)
+                print('сделали документ')
+                my_app.ui.lineEdit_2.setText(document.name)
+                self.active_document = document
 
-    # @decorator_cache
-    def _get_status_text(self):
-        kompass_process = kompas.get_proc()
-        return 'Открыт' if kompass_process else 'Закрыт'
-
-    def timerEvent(self, event):
-        new_status = self._get_status_text()
-        my_app.ui.lineEdit.setText(new_status)
-
+    def check_document(self):
+        pass
 
 
 if __name__ == '__main__':
@@ -91,8 +91,8 @@ if __name__ == '__main__':
     my_app = MyWin()
     my_app.show()
     kompas = KompasAPI()
-    status = kompas.get_kompas_status()
-    my_app.ui.lineEdit.setText(status)
+
+
 
     # status_thread = StatusThread()
     # status_thread.mysignal.connect(my_app.add_status_text, QtCore.Qt.QueuedConnection)
