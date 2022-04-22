@@ -60,8 +60,9 @@ class KompasAPI:
     def get_active_doc(self):
         """Получаем активный компас-документ"""
         document = self.application.ActiveDocument
-        if document:
-            self.__active_document = document
+        # if document:
+        #     self.__active_document = self.make_kompas_document(document)
+        # return self.__active_document
         return document
 
     def get_kompas_status(self) -> str:
@@ -78,6 +79,10 @@ class KompasAPI:
 
 if __name__ == '__main__':
     kompas = KompasAPI()
+    kompas.connect_to_kompas()
+    doc = kompas.get_active_doc()
+    doc = kompas.make_kompas_document(doc)
+    print(doc.name)
 
     # kompas.connect_to_kompas()
     # api_document = kompas.get_active_doc()
