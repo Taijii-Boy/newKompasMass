@@ -41,13 +41,13 @@ class ActiveDocThread(QtCore.QThread):
         self.my_signal.emit(doc.name)
 
 
-class KompasConnectThr(QtCore.QThread):
-
-    def __init__(self, parent=None):
-        QtCore.QThread.__init__(self, parent)
-
-    def run(self):
-        kompas.connect_to_kompas()
+# class KompasConnectThr(QtCore.QThread):
+#
+#     def __init__(self, parent=None):
+#         QtCore.QThread.__init__(self, parent)
+#
+#     def run(self):
+#         kompas.connect_to_kompas()
 
 
 
@@ -61,14 +61,14 @@ class MyWin(QMainWindow):
         self.ui.setupUi(self)
 
         # Запуск потоков на отслеживание состояния приложения
-        # self.status_thread = StatusThread()
-        # self.status_thread.my_signal.connect(self.change_status)
-        # self.status_thread.start()
+        self.status_thread = StatusThread()
+        self.status_thread.my_signal.connect(self.change_status)
+        self.status_thread.start()
 
         # self.active_doc_thread = ActiveDocThread()
         # self.active_doc_thread.my_signal.connect(self.change_active_doc)
 
-        self.kompas_connect_thr = KompasConnectThr()
+        # self.kompas_connect_thr = KompasConnectThr()
 
         self.active_document = None
         self.kompas_status = None
@@ -81,7 +81,7 @@ class MyWin(QMainWindow):
         # Обработчики
         self.ui.pushButton_3.clicked.connect(lambda: self.close())
         self.ui.pushButton_4.clicked.connect(lambda: self.showMinimized())
-        self.ui.lineEdit.textChanged.connect(self.what_to_do)
+        # self.ui.lineEdit.textChanged.connect(self.what_to_do)
 
         # События
         self.ui.label_2.mouseMoveEvent = self.move_window
