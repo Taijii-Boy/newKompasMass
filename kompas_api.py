@@ -9,13 +9,41 @@ from cdw import *
 from spw import *
 
 
-class KompasAPI:
+class PropertyObservable:
+    """Наблюдатель свойств. Информирует об изменениях свойств. Подмешиваем в функции"""
+    def __init__(self):
+        self.property_changed = Event()
+
+
+class Event(list):
+    """Список функций, которые необходимо вызывать всякий раз, когда происходит событие"""
+    def __call__(self, *args, **kwargs):
+        print('Зашел в Event()')
+        for item in self:
+            item(*args, **kwargs)
+
+
+class KompasAPI(PropertyObservable):
 
     def __init__(self):
-        self.__process = None
+        super().__init__()
+        self.__kompas_status = None
         self.__active_document = None
-        self.check_kompas_timer()
+        self.__timer = threading.Thread(target=self.__check_process, name='Timer', daemon=True)
+        self.start_kompas_checker()
 
+    @property
+    def kompas_status(self):
+        return self.__kompas_status
+
+    @kompas_status.setter
+    def kompas_status(self, value):
+        print('зашел в kompas_status.setter')
+        if self.__kompas_status == value:
+            return
+        else:
+            self.__kompas_status = value
+            self.property_changed('kompas_status', value)
 
     def connect_to_kompas(self):
         #  Подключим константы API Компас
@@ -33,29 +61,28 @@ class KompasAPI:
             Dispatch("Kompas.Application.7")._oleobj_.QueryInterface(self.KAPI7.IApplication.CLSID,
                                                                      pythoncom.IID_IDispatch))
 
-    def get_proc(self):
+    @staticmethod
+    def __get_proc():
         """Ищет среди приложений Компас и возвращает процесс"""
         for proc in psutil.process_iter():
             name = proc.name()
             if name == "KOMPAS.Exe":
                 return proc
 
-    def check_process(self):
+    def __check_process(self):
         """Проверяет, запущен ли Компас"""
         while True:
-            if self.__process and psutil.pid_exists(self.__process.pid):
-                time.sleep(5)
-                continue
+            if self.kompas_status:
+                break
             else:
-                self.__process = self.get_proc()
+                self.kompas_status = self.__get_proc()
                 time.sleep(3)
 
-    def check_kompas_timer(self):
-        timer = threading.Thread(target=self.check_process, name='Timer', daemon=True)
-        timer.start()
+    def start_kompas_checker(self):
+        self.__timer.start()
 
     def close(self):
-        self.__process.kill()
+        self.__kompas_status.kill()
 
     def get_active_doc(self):
         """Получаем активный компас-документ"""
@@ -64,9 +91,6 @@ class KompasAPI:
         #     self.__active_document = self.make_kompas_document(document)
         # return self.__active_document
         return document
-
-    def get_kompas_status(self) -> str:
-        return "Закрыт" if not self.__process else "Открыт"
 
     def make_kompas_document(self, doc):
         if doc.Name.endswith('cdw'):
@@ -79,10 +103,12 @@ class KompasAPI:
 
 if __name__ == '__main__':
     kompas = KompasAPI()
+
     kompas.connect_to_kompas()
-    doc = kompas.get_active_doc()
-    doc = kompas.make_kompas_document(doc)
-    print(doc.name)
+    print(kompas.application)
+    # doc = kompas.get_active_doc()
+    # doc = kompas.make_kompas_document(doc)
+    # print(doc.name)
 
     # kompas.connect_to_kompas()
     # api_document = kompas.get_active_doc()
